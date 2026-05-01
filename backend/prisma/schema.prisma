@@ -1,0 +1,196 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  PRODUCTOR
+  COMPRADOR
+  ADMIN_LOGISTICO
+}
+
+enum ProductStatus {
+  DISPONIBLE
+  RESERVADO
+  VENDIDO
+  INACTIVO
+}
+
+enum OrderStatus {
+  PENDIENTE
+  CONFIRMADO
+  EN_RECOLECCION
+  EN_CAMINO
+  ENTREGADO
+  CANCELADO
+}
+
+enum PaymentStatus {
+  PENDIENTE
+  PAGADO
+  FALLIDO
+  SIMULADO
+}
+
+enum PaymentMethod {
+  NEQUI
+  DAVIPLATA
+  PSE
+  CONTRAENTREGA
+}
+
+enum RouteStatus {
+  GENERADA
+  EN_PROCESO
+  FINALIZADA
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  producerProfile ProducerProfile?
+  buyerProfile    BuyerProfile?
+  orders          Order[]          @relation("BuyerOrders")
+  routePlans      RoutePlan[]      @relation("AdminRoutes")
+}
+
+model ProducerProfile {
+  id          String  @id @default(cuid())
+  userId      String  @unique
+  farmName    String
+  municipality String
+  village     String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  description String?
+
+  user       User         @relation(fields: [userId], references: [id])
+  products   Product[]
+  routeStops RouteStop[]
+}
+
+model BuyerProfile {
+  id         String  @id @default(cuid())
+  userId     String  @unique
+  buyerType  String?
+  city       String?
+  address    String?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  producerId  String
+  name        String
+  category    String
+  description String?
+  quantity    Float
+  unit        String
+  price       Float
+  municipality String
+  harvestDate DateTime?
+  status      ProductStatus @default(DISPONIBLE)
+  imageUrl    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  producer   ProducerProfile @relation(fields: [producerId], references: [id])
+  orderItems OrderItem[]
+}
+
+model Order {
+  id               String        @id @default(cuid())
+  buyerId          String
+  status           OrderStatus   @default(PENDIENTE)
+  total            Float
+  deliveryAddress  String?
+  paymentStatus    PaymentStatus @default(PENDIENTE)
+  traceabilityCode String        @unique
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  buyer               User                 @relation("BuyerOrders", fields: [buyerId], references: [id])
+  items               OrderItem[]
+  payment             Payment?
+  traceabilityEvents  TraceabilityEvent[]
+  routeStops          RouteStop[]
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Float
+  unitPrice Float
+  subtotal  Float
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Payment {
+  id                   String        @id @default(cuid())
+  orderId              String        @unique
+  method               PaymentMethod
+  status               PaymentStatus @default(PENDIENTE)
+  amount               Float
+  transactionReference String?
+  paidAt               DateTime?
+  createdAt            DateTime      @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model RoutePlan {
+  id               String      @id @default(cuid())
+  code             String      @unique
+  status           RouteStatus @default(GENERADA)
+  totalDistanceKm  Float?
+  createdById      String
+  createdAt        DateTime    @default(now())
+
+  createdBy User        @relation("AdminRoutes", fields: [createdById], references: [id])
+  stops     RouteStop[]
+}
+
+model RouteStop {
+  id               String   @id @default(cuid())
+  routePlanId      String
+  orderId          String
+  producerId       String
+  stopOrder        Int
+  latitude         Float
+  longitude        Float
+  address          String?
+  municipality     String?
+  estimatedArrival DateTime?
+
+  routePlan RoutePlan       @relation(fields: [routePlanId], references: [id])
+  order     Order           @relation(fields: [orderId], references: [id])
+  producer  ProducerProfile @relation(fields: [producerId], references: [id])
+}
+
+model TraceabilityEvent {
+  id          String   @id @default(cuid())
+  orderId     String
+  title       String
+  description String?
+  location    String?
+  createdAt   DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+}
