@@ -209,7 +209,13 @@ export default function LandingPage() {
 
       <footer className="text-center py-6 text-gray-400 text-xs border-t border-gray-100 bg-white">
         AgroEnlace MVP TRL5 — Prototipo académico funcional — Cundinamarca, Colombia
-      </footer>
-    </div>
-  );
-}
+        <br />
+        Desarrollado por{' '}
+        
+          href="https://www.instagram.com/daaaniel_mc"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-agro-600 hover:underline font-medium"
+        >
+          Daniel Mc 📸 @daaaniel_mc
+        </a>
