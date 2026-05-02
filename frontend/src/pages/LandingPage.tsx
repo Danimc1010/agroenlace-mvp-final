@@ -12,7 +12,6 @@ export default function LandingPage() {
     api.get('/products?limit=5')
       .then(r => setFeatured(r.data.slice(0, 5)))
       .catch(() => {
-        // Si falla la API, no muestra nada en featured — sin crash
         setFeatured([]);
       });
   }, []);
@@ -71,7 +70,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* PRODUCTOS DESTACADOS — cargados desde la API */}
+      {/* PRODUCTOS DESTACADOS */}
       <section className="max-w-6xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h2 className="font-display text-3xl font-bold text-agro-800 mb-3">Productos de temporada</h2>
@@ -87,7 +86,6 @@ export default function LandingPage() {
             ))}
           </div>
         ) : (
-          /* Fallback visual si la API no responde */
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
             {[
               { name: 'Mango Tommy', municipio: 'Viotá', precio: '$3.200/kg', img: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=400&q=80&fit=crop' },
@@ -211,7 +209,15 @@ export default function LandingPage() {
         AgroEnlace MVP TRL5 — Prototipo académico funcional — Cundinamarca, Colombia
         <br />
         Desarrollado por{' '}
-        <a href="https://www.instagram.com/daaaniel_mc" target="_blank" rel="noopener noreferrer" className="text-agro-600 hover:underline font-medium">
+        <a
+          href="https://www.instagram.com/daaaniel_mc"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#4a7c59', fontWeight: 600 }}
+        >
           Daniel Mc 📸 @daaaniel_mc
         </a>
       </footer>
+    </div>
+  );
+}
